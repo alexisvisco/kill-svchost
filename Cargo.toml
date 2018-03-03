@@ -1,0 +1,9 @@
+[package]
+name = "ksv"
+version = "0.1.0"
+authors = ["Alexis"]
+
+[dependencies]
+regex = "*"
+time = "*"
+schedule_recv = "*"
