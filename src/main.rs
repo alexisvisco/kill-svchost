@@ -7,6 +7,13 @@ use std::process::Command;
 use std::collections::HashSet;
 use regex::Regex;
 
+///Return a pid in a string that is the 
+///end of line retured by netstat :
+/// ```
+///...26.23:443       CLOSE_WAIT      8688
+///                                   ^^^^
+///```
+///Regex `(\d+)\r` match the last digits of the line.
 fn get_pid(vec: Vec<&str>, i: usize) -> Option<String> {
     let mut index = i - 1;
     loop {
@@ -27,6 +34,8 @@ fn get_pid(vec: Vec<&str>, i: usize) -> Option<String> {
     None
 }
 
+/// Launch command `taskkill /F /PID <pid>` and
+/// kill the proccess id if possible.
 fn kill_pid(pid: String) {
     let output = Command::new("taskkill")
         .arg("/F").arg("/PID").arg(pid.clone())
@@ -35,13 +44,19 @@ fn kill_pid(pid: String) {
     });
     if output.status.success() {
         let out = String::from_utf8_lossy(&output.stdout);
-        println!("{}", out);
+        print!("{}", out);
     }
     else {
         println!("Failed to exec taskkill with pid {}", pid);
     }
 }
 
+/// Launch command `netstat -b -o -n`. For
+/// all lines that contain svchost.exe call
+/// the function `get_pid()`. Then if the
+/// function return some pid add it to 
+/// the hashset of string. Finally kill all
+/// pids added by call `kill_pid()`.
 fn kill_svchost()
 {
     let output = Command::new("netstat")
@@ -69,14 +84,16 @@ fn kill_svchost()
             kill_pid(pid.clone());
         }
     } else {
-        println!("netstat failed and stderr was:\n{}", String::from_utf8_lossy(&output.stderr));
+        panic!("failed to execute netstat.");
     }
 }
 
+/// Create a loop that execute `kill_svchost()`
+/// every 8 seconds.
 fn main() {
     let tick = schedule_recv::periodic_ms(8000);
     loop {
-        println!("Check for svchost instances..");
+        println!(">> Check for svchost instances <<");
         kill_svchost();
         tick.recv().unwrap();
     }
