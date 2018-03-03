@@ -1,4 +1,4 @@
-# Kill-svchost-native
+# Automated way to kill svchost
 
 REMOVE THIS SHIT OF SVCHOST AND TAKE CONTROL OF YOUR COMPUTER !! :@
 
